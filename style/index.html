@@ -3,6 +3,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <link rel="stylesheet" href="../assets/style.css">
     <meta charset="UTF-8">
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
@@ -13,6 +14,26 @@
 
     <h1>Capital One Automator</h1>
     <button id="upload">Upload File</button>
+    <button id="get">
+      Get Data
+    </button>
+    <br />
+    <br />
+    <table id="table">
+      <thead>
+        <tr>
+            <th>Payee</th>
+            <th>Payment Account</th>
+            <th>Date</th>
+            <th>Category/Account</th>
+            <th>Amount</th>
+            <th>Customer/Project</th>
+        </tr>
+      </thead>
+      <tbody id="tableData">
+
+      </tbody>
+    </table>
 
     <!-- You can also require other files to run in this process -->
     <script src="./renderer.js"></script>

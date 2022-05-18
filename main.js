@@ -1,13 +1,14 @@
 const { app, BrowserWindow, dialog, ipcMain } = require('electron')
 const path = require('path')
 const os = require('os')
-const pdfLib = require('pdf-lib')
-const fetch = import('node-fetch')
+const { PdfReader } = require("pdfreader");
+const fs = require('fs');
+const { filter } = require('./utils/filter');
 
 const createWindow = () => {
     const win = new BrowserWindow({
-      width: 800,
-      height: 600,
+      width: 1400,
+      height: 1000,
       webPreferences: {
         preload: path.join(__dirname, 'preload.js'),
         nodeIntegration: true,
@@ -22,6 +23,11 @@ const createWindow = () => {
     createWindow()
   })
 
+let transactions = []
+let update;
+
+// This next bit parses the PDF and seperates into only the transactions
+
 ipcMain.on('open-file-dialog', (e) => {
   const properties = os.platform() === 'linux' || os.platform() === 'win32' ? ['openFile'] : ['openFile', 'openDirectory'];
   dialog.showOpenDialog({ properties }).then(async(data) => {
@@ -29,37 +35,67 @@ ipcMain.on('open-file-dialog', (e) => {
           console.log(`Path: ${data.filePaths[0]}`); 
           try {
             const pdfPath = data.filePaths[0]
-            const pdfData = {
-                textContent: [],
+
+            let rows = {}; // indexed by y-position
+
+
+              function flushRows() {
+                Object.keys(rows) // => array of y-positions (type: float)
+                  .sort((y1, y2) => parseFloat(y1) - parseFloat(y2)) // sort float positions
+                  .forEach((y) => {
+                      if(
+                          (rows[y] || []).join("").toUpperCase().startsWith('JAN') || 
+                          (rows[y] || []).join("").toUpperCase().startsWith('FEB') ||
+                          (rows[y] || []).join("").toUpperCase().startsWith('MAR') ||
+                          (rows[y] || []).join("").toUpperCase().startsWith('APR') ||
+                          (rows[y] || []).join("").toUpperCase().startsWith('MAY') ||
+                          (rows[y] || []).join("").toUpperCase().startsWith('JUN') ||
+                          (rows[y] || []).join("").toUpperCase().startsWith('JUL') ||
+                          (rows[y] || []).join("").toUpperCase().startsWith('AUG') ||
+                          (rows[y] || []).join("").toUpperCase().startsWith('SEP') ||
+                          (rows[y] || []).join("").toUpperCase().startsWith('OCT') ||
+                          (rows[y] || []).join("").toUpperCase().startsWith('NOV') ||
+                          (rows[y] || []).join("").toUpperCase().startsWith('DEC')
+                        ) {
+                            let r = (rows[y] || [])
+                            let obj = {
+                                transactionDate: r[0],
+                                postDate: r[1],
+                                vendor: r[2],
+                                amount: r[3]
+                            }
+                            if(obj.vendor !== undefined) transactions.push(obj)
+                        }
+                    });
+                rows = {}; // clear rows for next page
               }
+              
+              await fs.readFile(pdfPath, (err, pdfBuffer) => {
+                // pdfBuffer contains the file content
+                new PdfReader().parseBuffer(pdfBuffer, (err, item) => {
+                  if (err) console.error("error:", err);
+                  else if (!item) {
+                      flushRows()
+                      console.warn("end of buffer");                  
+                      update = filter(transactions)
+                      console.log(update)
+                    } else if (item.page) {
+                        flushRows(); // print the rows of the previous page
+                    } else if (item.text) {
+                    (rows[item.y] = rows[item.y] || []).push(item.text);
+                    }
+                })
+              })
 
-              const existingPdfBytes = await fetch(pdfPath).then(res => res.arrayBuffer())
-                console.log(existingPdfBytes)
-              const loadingTask = await pdfLib.PDFDocument.load(existingPdfBytes)
-              const doc = await loadingTask.promise
-
-              const numPages = doc.numPages
-              for (let i = 1; i <= numPages; i++) {
-                const page = await doc.getPage(i)
-                const txtContent = await page.getTextContent()
-                pdfData.textContent = pdfData.textContent.concat(txtContent.items.map(itm => ({ ...itm, page: i })))
-                for (const [key, value] of Object.entries(txtContent.styles)) {
-                  pdfData.styles[key] = value
-                }
-              }
-            
-              if (options && options.inferLines) {
-                pdfData.lines = inferLines(pdfData, options.inferLines.normalizeY)
-              }
-
-
-
-            console.log(pdfData)
           } catch (error) {
             console.log(error)
           }
         }
   })
+})
+
+ipcMain.on('populate-data', (e, arg) => {
+    e.reply('data-sent', update)
 })
 
   app.on('window-all-closed', () => {
