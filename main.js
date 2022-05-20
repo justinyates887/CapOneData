@@ -4,6 +4,7 @@ const os = require('os')
 const { PdfReader } = require("pdfreader");
 const fs = require('fs');
 const { filter } = require('./utils/filter');
+const ObjectsToCsv = require('objects-to-csv');
 
 const createWindow = () => {
     const win = new BrowserWindow({
@@ -32,7 +33,6 @@ ipcMain.on('open-file-dialog', (e) => {
   const properties = os.platform() === 'linux' || os.platform() === 'win32' ? ['openFile'] : ['openFile', 'openDirectory'];
   dialog.showOpenDialog({ properties }).then(async(data) => {
       if (data.filePaths.length > 0) { 
-          console.log(`Path: ${data.filePaths[0]}`); 
           try {
             const pdfPath = data.filePaths[0]
 
@@ -78,7 +78,6 @@ ipcMain.on('open-file-dialog', (e) => {
                       flushRows()
                       console.warn("end of buffer");                  
                       update = filter(transactions)
-                      console.log(update)
                     } else if (item.page) {
                         flushRows(); // print the rows of the previous page
                     } else if (item.text) {
@@ -91,6 +90,8 @@ ipcMain.on('open-file-dialog', (e) => {
             console.log(error)
           }
         }
+  }).then(() => {
+    e.reply('great-success')
   })
 })
 
@@ -98,6 +99,29 @@ ipcMain.on('populate-data', (e, arg) => {
     e.reply('data-sent', update)
 })
 
-  app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') app.quit()
+ipcMain.on('save-csv', async (e , arg) => {
+  const csv = new ObjectsToCsv(arg)
+
+  dialog.showSaveDialog({
+    title: 'Statement.csv',
+    buttonLabel: 'Save',
+    filters: [
+        {
+            name: 'CSV',
+            extensions: ['csv', 'xlsx']
+        }, ],
+    properties: []
+}).then(async(data) => {
+
+        try {
+          const path = data.filePath
+          await csv.toDisk(path)
+        } catch(err){
+          console.error(err)
+        }
   })
+})
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit()
+})
