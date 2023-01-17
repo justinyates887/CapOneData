@@ -68,4 +68,8 @@ Leave us a review on [Google](https://g.page/r/Ce7v7Ea5H2kpEB0/review)
 
 ## <a name="Demo"></a>Demo
 
-![Alt Text]('./assets/Sequence 01_1.gif')
+<p align="center">
+    <img src="./assets/demo.gif" 
+        alt="my banner"
+        width="450" height="200" />
+</p>
