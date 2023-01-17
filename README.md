@@ -4,10 +4,6 @@
 ![](https://img.shields.io/github/languages/top/justinyates887/api-website?color=yellow&style=flat-square)
 ![](https://img.shields.io/github/repo-size/justinyates887/api-website?style=flat-square)
 ![](https://img.shields.io/tokei/lines/github/justinyates887/api-website?style=flat-square)
-![](https://img.shields.io/github/license/justinyates887/api-website?color=red&style=flat-square)
-![](https://img.shields.io/mozilla-observatory/grade/associatedpoolsinc.com?publish&style=flat-square)
-![](https://img.shields.io/security-headers?style=flat-square&url=https%3A%2F%2Fwww.associatedpoolsinc.com)
-![](https://img.shields.io/website?down_color=Red&down_message=Offline&style=flat-square&up_color=Green&up_message=Online&url=https%3A%2F%2Fassociatedpoolsinc.com)
 ![](https://img.shields.io/github/last-commit/justinyates887/api-website?style=flat-square)
 
 ## Table of Contents
