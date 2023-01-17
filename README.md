@@ -70,6 +70,5 @@ Leave us a review on [Google](https://g.page/r/Ce7v7Ea5H2kpEB0/review)
 
 <p align="center">
     <img src="./assets/demo.gif" 
-        alt="my banner"
-        width="450" height="500" />
+        alt="my banner" />
 </p>
