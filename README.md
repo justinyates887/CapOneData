@@ -64,6 +64,8 @@ Leave us a review on [Google](https://g.page/r/Ce7v7Ea5H2kpEB0/review)
 
 ## <a name="Demo"></a>Demo
 
+Demo is displaying half speed for some reason.
+
 <p align="center">
     <img src="./assets/demo.gif" 
         alt="my banner" />
